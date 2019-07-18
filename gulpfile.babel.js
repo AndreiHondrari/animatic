@@ -6,10 +6,12 @@ import rename from 'gulp-rename';
 import babel from 'gulp-babel';
 import uglify from 'gulp-uglify';
 import concat from 'gulp-concat';
+import insert from 'gulp-append-prepend';
 
 const SRC_DIR = "./src/";
 const PLUGINS_DIR = "plugins/";
 const DIST_DIR = "./dist/";
+const INTRO_FILE = path.join(SRC_DIR, "credits", "intro.js");
 
 function clean(cb) {
     return del(DIST_DIR);
@@ -23,21 +25,24 @@ function getDistCleaner(subDistPath) {
 
 function _buildDevelopment(cb) {
     return src(path.join(SRC_DIR, "*.js"))
+        .pipe(insert.prependFile(INTRO_FILE, "\n\n\n"))
         .pipe(dest(DIST_DIR));
 }
 
 function _buildDevelopmentPlugins(cb) {
     return src(path.join(SRC_DIR, PLUGINS_DIR, "**/*.js"))
+        .pipe(insert.prependFile(INTRO_FILE, "\n\n\n"))
         .pipe(dest(path.join(DIST_DIR, PLUGINS_DIR)));
 }
 
 function _buildProduction(cb) {
-    return src(path.join(SRC_DIR, "**/*.js"))
+    return src(path.join(SRC_DIR, "*.js"))
         .pipe(babel())
         .pipe(uglify())
         .pipe(rename(function(filePath) {
             filePath.basename += ".min";
         }))
+        .pipe(insert.prependFile(INTRO_FILE, "\n\n\n"))
         .pipe(dest(DIST_DIR));
 }
 
@@ -48,6 +53,7 @@ function _buildProductionPlugins(cb) {
         .pipe(rename(function(filePath) {
             filePath.basename += ".min";
         }))
+        .pipe(insert.prependFile(INTRO_FILE, "\n\n\n"))
         .pipe(dest(path.join(DIST_DIR, PLUGINS_DIR)));
 }
 
@@ -57,6 +63,7 @@ function _buildDevelopmentBundle(cb) {
         path.join(SRC_DIR, PLUGINS_DIR, "**/*.js")
     ])
         .pipe(concat("animatic.bundle.js"))
+        .pipe(insert.prependFile(INTRO_FILE, "\n\n\n"))
         .pipe(dest(DIST_DIR));
 }
 
@@ -68,6 +75,7 @@ function _buildBundle(cb) {
         .pipe(concat("animatic.bundle.min.js"))
         .pipe(babel())
         .pipe(uglify())
+        .pipe(insert.prependFile(INTRO_FILE, "\n\n\n"))
         .pipe(dest(DIST_DIR));
 }
 
