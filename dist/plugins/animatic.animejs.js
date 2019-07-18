@@ -51,13 +51,20 @@
     };
 
     class AnimeTimelineAdapterNode extends Animatic.AbstractAnimaticAdapterNode {
-        constructor(timelineInstance) {
+        constructor(args) {
             super();
-            this._timelineInstance = timelineInstance;
+
+            const timelineOpts = args.opts || {};
+            const timeNodes = args.nodes || [];
 
             // make sure the node has full control
-            this._timelineInstance.pause();
-            this._timelineInstance.restart();
+            timelineOpts.autoplay = false;
+
+            this._timelineInstance = anime.timeline(timelineOpts);
+
+            for (const node of timeNodes) {
+                this._timelineInstance.add(node);
+            }
         }
 
         // properties
@@ -70,11 +77,12 @@
                 done();
             });
 
+            this._timelineInstance.direction = "normal";
             this._timelineInstance.play();
         }
 
         pause() {
-            throw Error("Not implemented!");
+            this._timelineInstance.pause();
         }
 
         backward(done) {
@@ -82,18 +90,19 @@
                 done();
             });
 
-            this._timelineInstance.reverse();
+            this._timelineInstance.direction = "reverse";
+            this._timelineInstance.play();
         }
     }
 
     Animatic.AnimeAdapterNode = AnimeAdapterNode;
-    // Animatic.AnimeTimelineAdapterNode = AnimeTimelineAdapterNode;
+    Animatic.AnimeTimelineAdapterNode = AnimeTimelineAdapterNode;
 
     Animatic.animeNode = function(opts) {
         return Animatic.node({handler: new AnimeAdapterNode(opts)});
     };
 
-    // Animatic.animeTimelineNode = function(opts) {
-    //     return Animatic.node({handler: new AnimeTimelineAdapterNode(opts)});
-    // };
+    Animatic.animeTimelineNode = function(opts) {
+        return Animatic.node({handler: new AnimeTimelineAdapterNode(opts)});
+    };
 })();
