@@ -4,7 +4,7 @@
   "description": "JavaScript execution orchestration library",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "npx jest --verbose"
   },
   "repository": {
     "type": "git",
