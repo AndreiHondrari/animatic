@@ -1,97 +1,99 @@
-(function() {
-    class AnimeAdapterNode extends Animatic.AbstractAnimaticAdapterNode {
 
-        constructor(opts) {
-            super();
-            opts.autoplay = false;
-            this._animationInstance = anime(opts);
-        }
+import Animatic from 'Animatic';
 
-        // properties
-        get adaptee() {
-            return this._animationInstance;
-        }
 
-        // control
-        forward(done) {
-            this._animationInstance.finished.then(function() {
-                done();
-            });
+class AnimeAdapterNode extends Animatic.AbstractAnimaticAdapterNode {
 
-            this._animationInstance.direction = "normal";
-            this._animationInstance.play();
-        }
+    constructor(opts) {
+        super();
+        opts.autoplay = false;
+        this._animationInstance = anime(opts);
+    }
 
-        pause() {
-            this._animationInstance.pause();
-        }
+    // properties
+    get adaptee() {
+        return this._animationInstance;
+    }
 
-        backward(done) {
-            const self = this;
-            this._animationInstance.finished.then(function() {
-                done();
-            });
+    // control
+    forward(done) {
+        this._animationInstance.finished.then(function() {
+            done();
+        });
 
-            setTimeout(function () {
-                self._animationInstance.direction = "reverse";
-                self._animationInstance.play();
-            }, 0);
-        }
-    };
+        this._animationInstance.direction = "normal";
+        this._animationInstance.play();
+    }
 
-    class AnimeTimelineAdapterNode extends Animatic.AbstractAnimaticAdapterNode {
-        constructor(args) {
-            super();
+    pause() {
+        this._animationInstance.pause();
+    }
 
-            const timelineOpts = args.opts || {};
-            const timeNodes = args.nodes || [];
+    backward(done) {
+        const self = this;
+        this._animationInstance.finished.then(function() {
+            done();
+        });
 
-            // make sure the node has full control
-            timelineOpts.autoplay = false;
+        setTimeout(function () {
+            self._animationInstance.direction = "reverse";
+            self._animationInstance.play();
+        }, 0);
+    }
+};
 
-            this._timelineInstance = anime.timeline(timelineOpts);
+class AnimeTimelineAdapterNode extends Animatic.AbstractAnimaticAdapterNode {
+    constructor(args) {
+        super();
 
-            for (const node of timeNodes) {
-                this._timelineInstance.add(node);
-            }
-        }
+        const timelineOpts = args.opts || {};
+        const timeNodes = args.nodes || [];
 
-        // properties
-        get adaptee() {
-            return this._timelineInstance;
-        }
+        // make sure the node has full control
+        timelineOpts.autoplay = false;
 
-        forward(done) {
-            this._timelineInstance.finished.then(function() {
-                done();
-            });
+        this._timelineInstance = anime.timeline(timelineOpts);
 
-            this._timelineInstance.direction = "normal";
-            this._timelineInstance.play();
-        }
-
-        pause() {
-            this._timelineInstance.pause();
-        }
-
-        backward(done) {
-            this._timelineInstance.finished.then(function() {
-                done();
-            });
-
-            this._timelineInstance.direction = "reverse";
-            this._timelineInstance.play();
+        for (const node of timeNodes) {
+            this._timelineInstance.add(node);
         }
     }
 
-    Animatic.AnimeAdapterNode = AnimeAdapterNode;
-    Animatic.AnimeTimelineAdapterNode = AnimeTimelineAdapterNode;
+    // properties
+    get adaptee() {
+        return this._timelineInstance;
+    }
 
-    Animatic.animeNode = function(opts) {
-        return Animatic.node({handler: new AnimeAdapterNode(opts)});
-    };
+    forward(done) {
+        this._timelineInstance.finished.then(function() {
+            done();
+        });
 
-    Animatic.animeTimelineNode = function(opts) {
-        return Animatic.node({handler: new AnimeTimelineAdapterNode(opts)});
-    };
-})();
+        this._timelineInstance.direction = "normal";
+        this._timelineInstance.play();
+    }
+
+    pause() {
+        this._timelineInstance.pause();
+    }
+
+    backward(done) {
+        this._timelineInstance.finished.then(function() {
+            done();
+        });
+
+        this._timelineInstance.direction = "reverse";
+        this._timelineInstance.play();
+    }
+}
+
+Animatic.AnimeAdapterNode = AnimeAdapterNode;
+Animatic.AnimeTimelineAdapterNode = AnimeTimelineAdapterNode;
+
+Animatic.animeNode = function(opts) {
+    return Animatic.node({handler: new AnimeAdapterNode(opts)});
+};
+
+Animatic.animeTimelineNode = function(opts) {
+    return Animatic.node({handler: new AnimeTimelineAdapterNode(opts)});
+};

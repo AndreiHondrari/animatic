@@ -3,10 +3,13 @@ import {src, dest, series, parallel} from 'gulp';
 import path from 'path';
 import del from 'del';
 import rename from 'gulp-rename';
-import babel from 'gulp-babel';
-import uglify from 'gulp-uglify';
+import merge from 'merge2';
 import concat from 'gulp-concat';
 import insert from 'gulp-append-prepend';
+
+import rollup from 'gulp-better-rollup';
+import babelPlugin from 'rollup-plugin-babel';
+import { uglify as uglifyPlugin } from 'rollup-plugin-uglify';
 
 const SRC_DIR = "./src/";
 const PLUGINS_DIR = "plugins/";
@@ -24,21 +27,40 @@ function getDistCleaner(subDistPath) {
 }
 
 function _buildDevelopment(cb) {
-    return src(path.join(SRC_DIR, "*.js"))
+    return src(path.join(SRC_DIR, "animatic.js"))
+        .pipe(rollup({
+            plugins: [babelPlugin()],
+        }, {
+            format: "iife",
+            name: "Animatic",
+        }))
         .pipe(insert.prependFile(INTRO_FILE, "\n\n\n"))
         .pipe(dest(DIST_DIR));
 }
 
 function _buildDevelopmentPlugins(cb) {
-    return src(path.join(SRC_DIR, PLUGINS_DIR, "**/*.js"))
+    return src(path.join(SRC_DIR, PLUGINS_DIR, "*.js"))
+        .pipe(rollup({
+            plugins: [babelPlugin()],
+            external: ["Animatic"],
+        }, {
+            format: "iife",
+            globals: {
+                Animatic: "Animatic"
+            }
+        }))
         .pipe(insert.prependFile(INTRO_FILE, "\n\n\n"))
         .pipe(dest(path.join(DIST_DIR, PLUGINS_DIR)));
 }
 
 function _buildProduction(cb) {
     return src(path.join(SRC_DIR, "*.js"))
-        .pipe(babel())
-        .pipe(uglify())
+        .pipe(rollup({
+            plugins: [babelPlugin(), uglifyPlugin()],
+        }, {
+            format: "iife",
+            name: "Animatic",
+        }))
         .pipe(rename(function(filePath) {
             filePath.basename += ".min";
         }))
@@ -47,9 +69,16 @@ function _buildProduction(cb) {
 }
 
 function _buildProductionPlugins(cb) {
-    return src(path.join(SRC_DIR, PLUGINS_DIR, "**/*.js"))
-        .pipe(babel())
-        .pipe(uglify())
+    return src(path.join(SRC_DIR, PLUGINS_DIR, "*.js"))
+        .pipe(rollup({
+            plugins: [babelPlugin(), uglifyPlugin()],
+            external: ["Animatic"],
+        }, {
+            format: "iife",
+            globals: {
+                Animatic: "Animatic"
+            }
+        }))
         .pipe(rename(function(filePath) {
             filePath.basename += ".min";
         }))
@@ -58,45 +87,77 @@ function _buildProductionPlugins(cb) {
 }
 
 function _buildDevelopmentBundle(cb) {
-    return src([
-        path.join(SRC_DIR, "*.js"),
-        path.join(SRC_DIR, PLUGINS_DIR, "**/*.js")
-    ])
+
+    const animaticStream = src(path.join(SRC_DIR, "animatic.js"))
+        .pipe(rollup({
+            plugins: [babelPlugin()],
+        }, {
+            format: "iife",
+            name: "Animatic",
+        }));
+
+    const pluginsStream = src(path.join(SRC_DIR, PLUGINS_DIR, "*.js"))
+        .pipe(rollup({
+            plugins: [babelPlugin()],
+            external: ["Animatic"],
+        }, {
+            format: "iife",
+            globals: {
+                Animatic: "Animatic"
+            }
+        }));
+
+    return merge([animaticStream, pluginsStream])
         .pipe(concat("animatic.bundle.js"))
         .pipe(insert.prependFile(INTRO_FILE, "\n\n\n"))
         .pipe(dest(DIST_DIR));
 }
 
 function _buildBundle(cb) {
-    return src([
-        path.join(SRC_DIR, "*.js"),
-        path.join(SRC_DIR, PLUGINS_DIR, "**/*.js")
-    ])
+
+    const animaticStream = src(path.join(SRC_DIR, "animatic.js"))
+        .pipe(rollup({
+            plugins: [babelPlugin(), uglifyPlugin()],
+        }, {
+            format: "iife",
+            name: "Animatic",
+        }));
+
+    const pluginsStream = src(path.join(SRC_DIR, PLUGINS_DIR, "*.js"))
+        .pipe(rollup({
+            plugins: [babelPlugin(), uglifyPlugin()],
+            external: ["Animatic"],
+        }, {
+            format: "iife",
+            globals: {
+                Animatic: "Animatic"
+            }
+        }));
+
+    return merge([animaticStream, pluginsStream])
         .pipe(concat("animatic.bundle.min.js"))
-        .pipe(babel())
-        .pipe(uglify())
         .pipe(insert.prependFile(INTRO_FILE, "\n\n\n"))
         .pipe(dest(DIST_DIR));
 }
 
 
-const buildDevelopment = series(
+const buildAnimaticDevelopment = series(
     getDistCleaner("*.js"),
     _buildDevelopment
 );
 
 const buildDevelopmentPlugins = series(
-    getDistCleaner(path.join(PLUGINS_DIR)),
+    getDistCleaner(PLUGINS_DIR),
     _buildDevelopmentPlugins
 );
 
-const buildProduction = series(
-    getDistCleaner("*.js"),
+const buildAnimaticProduction = series(
+    getDistCleaner("*.min.js"),
     _buildProduction
 );
 
 const buildProductionPlugins = series(
-    getDistCleaner(path.join(PLUGINS_DIR)),
+    getDistCleaner(PLUGINS_DIR),
     _buildProductionPlugins
 );
 
@@ -113,9 +174,9 @@ const buildBundle = series(
 const build = series(
     clean,
     parallel(
-        buildDevelopment,
+        buildAnimaticDevelopment,
         buildDevelopmentPlugins,
-        buildProduction,
+        buildAnimaticProduction,
         buildProductionPlugins,
         buildBundle
     )
@@ -124,9 +185,9 @@ const build = series(
 export {
     clean,
     build,
-    buildDevelopment,
+    buildAnimaticDevelopment,
     buildDevelopmentPlugins,
-    buildProduction,
+    buildAnimaticProduction,
     buildProductionPlugins,
     buildDevelopmentBundle,
     buildBundle
