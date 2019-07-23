@@ -17,6 +17,10 @@ var Animatic = (function () {
       PAUSED: Symbol("PAUSED"),
       COMPLETED: Symbol("COMPLETED")
     });
+    var AnimationDirection = Object.freeze({
+      FORWARD: Symbol("FORWARD"),
+      BACKWARD: Symbol("BACKWARD")
+    });
 
     function _classCallCheck(instance, Constructor) {
       if (!(instance instanceof Constructor)) {
@@ -708,7 +712,7 @@ var Animatic = (function () {
         }
       }, {
         key: "_callCompleted",
-        value: function _callCompleted() {
+        value: function _callCompleted(direction) {
           var _iteratorNormalCompletion8 = true;
           var _didIteratorError8 = false;
           var _iteratorError8 = undefined;
@@ -716,7 +720,7 @@ var Animatic = (function () {
           try {
             for (var _iterator8 = this._onCompleteCallbacks[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
               var callback = _step8.value;
-              callback();
+              callback(direction);
             }
           } catch (err) {
             _didIteratorError8 = true;
@@ -779,7 +783,7 @@ var Animatic = (function () {
           if (previousCount == 0 && !anyIncompleteNode) {
             this._animationStatus = AnimationStatus.COMPLETED;
 
-            this._callCompleted();
+            this._callCompleted(AnimationDirection.BACKWARD);
           }
         }
       }, {
@@ -818,7 +822,7 @@ var Animatic = (function () {
           if (nextCount == 0 && !anyIncompleteNode) {
             this._animationStatus = AnimationStatus.COMPLETED;
 
-            this._callCompleted();
+            this._callCompleted(AnimationDirection.FORWARD);
           }
         }
       }, {
@@ -858,6 +862,7 @@ var Animatic = (function () {
 
     var animatic = {
       AnimationStatus: AnimationStatus,
+      AnimationDirection: AnimationDirection,
       AbstractAnimaticAdapterNode: AbstractAnimaticAdapterNode,
       AnimaticNode: AnimaticNode,
       AnimaticOrchestra: AnimaticOrchestra,

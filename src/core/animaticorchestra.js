@@ -1,7 +1,7 @@
 'use strict';
 
 
-import { AnimationStatus } from './constants.js';
+import { AnimationStatus, AnimationDirection } from './constants.js';
 
 
 class AnimaticOrchestra {
@@ -142,9 +142,9 @@ class AnimaticOrchestra {
         }
     }
 
-    _callCompleted() {
+    _callCompleted(direction) {
         for (const callback of this._onCompleteCallbacks) {
-            callback();
+            callback(direction);
         }
     }
 
@@ -167,7 +167,7 @@ class AnimaticOrchestra {
 
         if (previousCount == 0 && !anyIncompleteNode) {
             this._animationStatus = AnimationStatus.COMPLETED;
-            this._callCompleted();
+            this._callCompleted(AnimationDirection.BACKWARD);
         }
     }
 
@@ -182,7 +182,7 @@ class AnimaticOrchestra {
 
         if (nextCount == 0 && !anyIncompleteNode) {
             this._animationStatus = AnimationStatus.COMPLETED;
-            this._callCompleted();
+            this._callCompleted(AnimationDirection.FORWARD);
         }
     }
 }

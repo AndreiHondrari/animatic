@@ -7,7 +7,13 @@ const AnimationStatus = Object.freeze({
     COMPLETED:  Symbol("COMPLETED"),
 });
 
+const AnimationDirection = Object.freeze({
+    FORWARD: Symbol("FORWARD"),
+    BACKWARD: Symbol("BACKWARD"),
+})
+
 
 export {
-    AnimationStatus
+    AnimationStatus,
+    AnimationDirection
 };
