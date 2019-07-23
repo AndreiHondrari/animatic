@@ -13,6 +13,8 @@ class AnimaticOrchestra {
 
         this._onBeginCallbacks = new Array();
         this._onCompleteCallbacks = new Array();
+        this._onCompletePromises = new Array();
+
         this._animationStatus = AnimationStatus.PAUSED;
     }
 
@@ -37,7 +39,9 @@ class AnimaticOrchestra {
         const self = this;
 
         return new Promise(function(resolve, reject) {
-
+            self._onCompletePromises.push(function(direction) {
+                resolve(direction);
+            });
         });
     }
 
@@ -146,6 +150,10 @@ class AnimaticOrchestra {
         for (const callback of this._onCompleteCallbacks) {
             callback(direction);
         }
+        for (const promiseCallback of this._onCompletePromises) {
+            promiseCallback(direction);
+        }
+        this._onCompletePromises = new Array();
     }
 
     activateNode(nodeId) {

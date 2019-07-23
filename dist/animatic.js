@@ -433,6 +433,7 @@ var Animatic = (function () {
         this._isAnimationStarted = false;
         this._onBeginCallbacks = new Array();
         this._onCompleteCallbacks = new Array();
+        this._onCompletePromises = new Array();
         this._animationStatus = AnimationStatus.PAUSED;
       } // properties
 
@@ -736,34 +737,15 @@ var Animatic = (function () {
               }
             }
           }
-        }
-      }, {
-        key: "activateNode",
-        value: function activateNode(nodeId) {
-          this._activeNodes.set(nodeId, this._nodes.get(nodeId));
-        }
-      }, {
-        key: "disableNode",
-        value: function disableNode(nodeId) {
-          this._activeNodes["delete"](nodeId);
-        }
-      }, {
-        key: "touchStart",
-        value: function touchStart() {
-          var previousCount = 0;
-          var anyIncompleteNode = false;
+
           var _iteratorNormalCompletion9 = true;
           var _didIteratorError9 = false;
           var _iteratorError9 = undefined;
 
           try {
-            for (var _iterator9 = this._activeNodes[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-              var _step9$value = _slicedToArray(_step9.value, 2),
-                  id = _step9$value[0],
-                  node = _step9$value[1];
-
-              previousCount += node.previousCount;
-              anyIncompleteNode = anyIncompleteNode || node.status != AnimationStatus.COMPLETED;
+            for (var _iterator9 = this._onCompletePromises[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+              var promiseCallback = _step9.value;
+              promiseCallback(direction);
             }
           } catch (err) {
             _didIteratorError9 = true;
@@ -780,16 +762,22 @@ var Animatic = (function () {
             }
           }
 
-          if (previousCount == 0 && !anyIncompleteNode) {
-            this._animationStatus = AnimationStatus.COMPLETED;
-
-            this._callCompleted(AnimationDirection.BACKWARD);
-          }
+          this._onCompletePromises = new Array();
         }
       }, {
-        key: "touchEnd",
-        value: function touchEnd() {
-          var nextCount = 0;
+        key: "activateNode",
+        value: function activateNode(nodeId) {
+          this._activeNodes.set(nodeId, this._nodes.get(nodeId));
+        }
+      }, {
+        key: "disableNode",
+        value: function disableNode(nodeId) {
+          this._activeNodes["delete"](nodeId);
+        }
+      }, {
+        key: "touchStart",
+        value: function touchStart() {
+          var previousCount = 0;
           var anyIncompleteNode = false;
           var _iteratorNormalCompletion10 = true;
           var _didIteratorError10 = false;
@@ -801,7 +789,7 @@ var Animatic = (function () {
                   id = _step10$value[0],
                   node = _step10$value[1];
 
-              nextCount += node.nextCount;
+              previousCount += node.previousCount;
               anyIncompleteNode = anyIncompleteNode || node.status != AnimationStatus.COMPLETED;
             }
           } catch (err) {
@@ -815,6 +803,45 @@ var Animatic = (function () {
             } finally {
               if (_didIteratorError10) {
                 throw _iteratorError10;
+              }
+            }
+          }
+
+          if (previousCount == 0 && !anyIncompleteNode) {
+            this._animationStatus = AnimationStatus.COMPLETED;
+
+            this._callCompleted(AnimationDirection.BACKWARD);
+          }
+        }
+      }, {
+        key: "touchEnd",
+        value: function touchEnd() {
+          var nextCount = 0;
+          var anyIncompleteNode = false;
+          var _iteratorNormalCompletion11 = true;
+          var _didIteratorError11 = false;
+          var _iteratorError11 = undefined;
+
+          try {
+            for (var _iterator11 = this._activeNodes[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+              var _step11$value = _slicedToArray(_step11.value, 2),
+                  id = _step11$value[0],
+                  node = _step11$value[1];
+
+              nextCount += node.nextCount;
+              anyIncompleteNode = anyIncompleteNode || node.status != AnimationStatus.COMPLETED;
+            }
+          } catch (err) {
+            _didIteratorError11 = true;
+            _iteratorError11 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion11 && _iterator11["return"] != null) {
+                _iterator11["return"]();
+              }
+            } finally {
+              if (_didIteratorError11) {
+                throw _iteratorError11;
               }
             }
           }
@@ -848,7 +875,12 @@ var Animatic = (function () {
       }, {
         key: "finished",
         get: function get() {
-          return new Promise(function (resolve, reject) {});
+          var self = this;
+          return new Promise(function (resolve, reject) {
+            self._onCompletePromises.push(function (direction) {
+              resolve(direction);
+            });
+          });
         }
       }, {
         key: "status",
