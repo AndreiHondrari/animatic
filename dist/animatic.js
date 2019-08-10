@@ -241,7 +241,10 @@ var Animatic = (function () {
 
       }, {
         key: "forward",
-        value: function forward() {
+        value: function forward(opts) {
+          // arguments
+          fake = opts.fake || false; // execute
+
           this._animationStatus = AnimationStatus.RUNNING;
           var self = this;
           this._previousCountdown--;
@@ -287,9 +290,14 @@ var Animatic = (function () {
           }
           this.orchestra.activateNode(this.id);
 
-          if (this._isFunctionHandler) {
-            if (this._handler === null) _touchEnd();
+          if (this._handler === null || fake) {
+            _touchEnd();
 
+            return;
+          } // call a forward function or an adapter forward method
+
+
+          if (this._isFunctionHandler) {
             this._handler(_touchEnd);
           } else {
             this._handler.forward(_touchEnd);
@@ -309,7 +317,10 @@ var Animatic = (function () {
         }
       }, {
         key: "backward",
-        value: function backward() {
+        value: function backward(opts) {
+          // arguments
+          fake = opts.fake || false; // execute
+
           this._animationStatus = AnimationStatus.RUNNING;
           var self = this;
           this._nextCountdown--;
@@ -355,9 +366,14 @@ var Animatic = (function () {
           }
           this.orchestra.activateNode(this.id);
 
-          if (this._isFunctionHandler) {
-            if (this._backwardFunction === null) _touchStart();
+          if (this._backwardFunction === null || fake) {
+            _touchStart();
 
+            return;
+          } // call a backwad function or an adapter backward method
+
+
+          if (this._isFunctionHandler) {
             this._backwardFunction(_touchStart);
           } else {
             this._handler.backward(_touchStart);
@@ -671,30 +687,24 @@ var Animatic = (function () {
               }
             }
           }
-        } // callbacks
-
-      }, {
-        key: "onBegin",
-        value: function onBegin(callback) {
-          this._onBeginCallbacks.push(callback);
         }
       }, {
-        key: "onComplete",
-        value: function onComplete(callback) {
-          this._onCompleteCallbacks.push(callback);
-        } // notifications
-
-      }, {
-        key: "_callBegan",
-        value: function _callBegan() {
+        key: "fakePlay",
+        value: function fakePlay() {
+          this._animationStatus = AnimationStatus.RUNNING;
           var _iteratorNormalCompletion7 = true;
           var _didIteratorError7 = false;
           var _iteratorError7 = undefined;
 
           try {
-            for (var _iterator7 = this._onBeginCallbacks[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-              var callback = _step7.value;
-              callback();
+            for (var _iterator7 = this._rootNodes[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+              var _step7$value = _slicedToArray(_step7.value, 2),
+                  id = _step7$value[0],
+                  rootNode = _step7$value[1];
+
+              rootNode.forward({
+                fake: true
+              });
             }
           } catch (err) {
             _didIteratorError7 = true;
@@ -712,16 +722,22 @@ var Animatic = (function () {
           }
         }
       }, {
-        key: "_callCompleted",
-        value: function _callCompleted(direction) {
+        key: "fakeReverse",
+        value: function fakeReverse() {
+          this._animationStatus = AnimationStatus.RUNNING;
           var _iteratorNormalCompletion8 = true;
           var _didIteratorError8 = false;
           var _iteratorError8 = undefined;
 
           try {
-            for (var _iterator8 = this._onCompleteCallbacks[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-              var callback = _step8.value;
-              callback(direction);
+            for (var _iterator8 = new Map(this._activeNodes)[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+              var _step8$value = _slicedToArray(_step8.value, 2),
+                  id = _step8$value[0],
+                  activeNode = _step8$value[1];
+
+              activeNode.backward({
+                fake: true
+              });
             }
           } catch (err) {
             _didIteratorError8 = true;
@@ -737,15 +753,30 @@ var Animatic = (function () {
               }
             }
           }
+        } // callbacks
 
+      }, {
+        key: "onBegin",
+        value: function onBegin(callback) {
+          this._onBeginCallbacks.push(callback);
+        }
+      }, {
+        key: "onComplete",
+        value: function onComplete(callback) {
+          this._onCompleteCallbacks.push(callback);
+        } // notifications
+
+      }, {
+        key: "_callBegan",
+        value: function _callBegan() {
           var _iteratorNormalCompletion9 = true;
           var _didIteratorError9 = false;
           var _iteratorError9 = undefined;
 
           try {
-            for (var _iterator9 = this._onCompletePromises[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-              var promiseCallback = _step9.value;
-              promiseCallback(direction);
+            for (var _iterator9 = this._onBeginCallbacks[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+              var callback = _step9.value;
+              callback();
             }
           } catch (err) {
             _didIteratorError9 = true;
@@ -758,6 +789,57 @@ var Animatic = (function () {
             } finally {
               if (_didIteratorError9) {
                 throw _iteratorError9;
+              }
+            }
+          }
+        }
+      }, {
+        key: "_callCompleted",
+        value: function _callCompleted(direction) {
+          var _iteratorNormalCompletion10 = true;
+          var _didIteratorError10 = false;
+          var _iteratorError10 = undefined;
+
+          try {
+            for (var _iterator10 = this._onCompleteCallbacks[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+              var callback = _step10.value;
+              callback(direction);
+            }
+          } catch (err) {
+            _didIteratorError10 = true;
+            _iteratorError10 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion10 && _iterator10["return"] != null) {
+                _iterator10["return"]();
+              }
+            } finally {
+              if (_didIteratorError10) {
+                throw _iteratorError10;
+              }
+            }
+          }
+
+          var _iteratorNormalCompletion11 = true;
+          var _didIteratorError11 = false;
+          var _iteratorError11 = undefined;
+
+          try {
+            for (var _iterator11 = this._onCompletePromises[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+              var promiseCallback = _step11.value;
+              promiseCallback(direction);
+            }
+          } catch (err) {
+            _didIteratorError11 = true;
+            _iteratorError11 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion11 && _iterator11["return"] != null) {
+                _iterator11["return"]();
+              }
+            } finally {
+              if (_didIteratorError11) {
+                throw _iteratorError11;
               }
             }
           }
@@ -779,30 +861,30 @@ var Animatic = (function () {
         value: function touchStart() {
           var previousCount = 0;
           var anyIncompleteNode = false;
-          var _iteratorNormalCompletion10 = true;
-          var _didIteratorError10 = false;
-          var _iteratorError10 = undefined;
+          var _iteratorNormalCompletion12 = true;
+          var _didIteratorError12 = false;
+          var _iteratorError12 = undefined;
 
           try {
-            for (var _iterator10 = this._activeNodes[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-              var _step10$value = _slicedToArray(_step10.value, 2),
-                  id = _step10$value[0],
-                  node = _step10$value[1];
+            for (var _iterator12 = this._activeNodes[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
+              var _step12$value = _slicedToArray(_step12.value, 2),
+                  id = _step12$value[0],
+                  node = _step12$value[1];
 
               previousCount += node.previousCount;
               anyIncompleteNode = anyIncompleteNode || node.status != AnimationStatus.COMPLETED;
             }
           } catch (err) {
-            _didIteratorError10 = true;
-            _iteratorError10 = err;
+            _didIteratorError12 = true;
+            _iteratorError12 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion10 && _iterator10["return"] != null) {
-                _iterator10["return"]();
+              if (!_iteratorNormalCompletion12 && _iterator12["return"] != null) {
+                _iterator12["return"]();
               }
             } finally {
-              if (_didIteratorError10) {
-                throw _iteratorError10;
+              if (_didIteratorError12) {
+                throw _iteratorError12;
               }
             }
           }
@@ -818,30 +900,30 @@ var Animatic = (function () {
         value: function touchEnd() {
           var nextCount = 0;
           var anyIncompleteNode = false;
-          var _iteratorNormalCompletion11 = true;
-          var _didIteratorError11 = false;
-          var _iteratorError11 = undefined;
+          var _iteratorNormalCompletion13 = true;
+          var _didIteratorError13 = false;
+          var _iteratorError13 = undefined;
 
           try {
-            for (var _iterator11 = this._activeNodes[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-              var _step11$value = _slicedToArray(_step11.value, 2),
-                  id = _step11$value[0],
-                  node = _step11$value[1];
+            for (var _iterator13 = this._activeNodes[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
+              var _step13$value = _slicedToArray(_step13.value, 2),
+                  id = _step13$value[0],
+                  node = _step13$value[1];
 
               nextCount += node.nextCount;
               anyIncompleteNode = anyIncompleteNode || node.status != AnimationStatus.COMPLETED;
             }
           } catch (err) {
-            _didIteratorError11 = true;
-            _iteratorError11 = err;
+            _didIteratorError13 = true;
+            _iteratorError13 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion11 && _iterator11["return"] != null) {
-                _iterator11["return"]();
+              if (!_iteratorNormalCompletion13 && _iterator13["return"] != null) {
+                _iterator13["return"]();
               }
             } finally {
-              if (_didIteratorError11) {
-                throw _iteratorError11;
+              if (_didIteratorError13) {
+                throw _iteratorError13;
               }
             }
           }

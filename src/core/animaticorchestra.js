@@ -130,6 +130,20 @@ class AnimaticOrchestra {
         }
     }
 
+    fakePlay() {
+        this._animationStatus = AnimationStatus.RUNNING;
+        for (const [id, rootNode] of this._rootNodes) {
+            rootNode.forward({fake: true});
+        }
+    }
+
+    fakeReverse() {
+        this._animationStatus = AnimationStatus.RUNNING;
+        for (const [id, activeNode] of new Map(this._activeNodes)) {
+            activeNode.backward({fake: true});
+        }
+    }
+
     // callbacks
     onBegin(callback) {
         this._onBeginCallbacks.push(callback);

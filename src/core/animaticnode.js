@@ -103,7 +103,11 @@ class AnimaticNode {
     }
 
     // control
-    forward() {
+    forward(opts) {
+        // arguments
+        fake = opts.fake || false;
+
+        // execute
         this._animationStatus = AnimationStatus.RUNNING;
         const self = this;
 
@@ -132,10 +136,13 @@ class AnimaticNode {
 
         this.orchestra.activateNode(this.id);
 
-        if (this._isFunctionHandler) {
-            if (this._handler === null)
-                _touchEnd();
+        if (this._handler === null || fake) {
+            _touchEnd();
+            return;
+        }
 
+        // call a forward function or an adapter forward method
+        if (this._isFunctionHandler) {
             this._handler(_touchEnd);
         } else {
             this._handler.forward(_touchEnd);
@@ -155,7 +162,11 @@ class AnimaticNode {
         }
     }
 
-    backward() {
+    backward(opts) {
+        // arguments
+        fake = opts.fake || false;
+
+        // execute
         this._animationStatus = AnimationStatus.RUNNING;
         const self = this;
 
@@ -184,10 +195,13 @@ class AnimaticNode {
 
         this.orchestra.activateNode(this.id);
 
-        if (this._isFunctionHandler) {
-            if (this._backwardFunction === null)
-                _touchStart();
+        if (this._backwardFunction === null || fake) {
+            _touchStart();
+            return;
+        }
 
+        // call a backwad function or an adapter backward method
+        if (this._isFunctionHandler) {
             this._backwardFunction(_touchStart);
         } else {
             this._handler.backward(_touchStart);
