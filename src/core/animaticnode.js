@@ -126,7 +126,7 @@ class AnimaticNode {
             self._nextCountdown = self.nextCount;
 
             for (const [id, node] of self._nextNodes) {
-                node.forward();
+                node.forward({fake: fake});
             }
         };
 
@@ -181,7 +181,7 @@ class AnimaticNode {
             self._previousCountdown = self.previousCount;
 
             for (const [id, node] of self._previousNodes) {
-                node.backward();
+                node.backward({fake: fake});
             }
         };
 

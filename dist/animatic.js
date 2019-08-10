@@ -282,7 +282,9 @@ var Animatic = (function () {
                     id = _step$value[0],
                     node = _step$value[1];
 
-                node.forward();
+                node.forward({
+                  fake: fake
+                });
               }
             } catch (err) {
               _didIteratorError = true;
@@ -359,7 +361,9 @@ var Animatic = (function () {
                     id = _step2$value[0],
                     node = _step2$value[1];
 
-                node.backward();
+                node.backward({
+                  fake: fake
+                });
               }
             } catch (err) {
               _didIteratorError2 = true;
