@@ -12,12 +12,12 @@ class AnimaticNode {
         return this._idCounter++;
     }
 
-    constructor(args) {
-        this._handler = args.handler || null;
-        this._backwardFunction = args.backward || null;
-        this._pauseFunction = args.pause || null;
-        this._resetFunction = args.reset || null;
-        this._isFunctionHandler = (args.handler instanceof Function);
+    constructor({handler=null, backward=null, pause=null, reset=null} = {}) {
+        this._handler = handler;
+        this._backwardFunction = backward;
+        this._pauseFunction = pause;
+        this._resetFunction = reset;
+        this._isFunctionHandler = (handler instanceof Function);
 
         this._id = AnimaticNode._getNewId();
         this._orchestra = null;
@@ -103,11 +103,7 @@ class AnimaticNode {
     }
 
     // control
-    forward(opts) {
-        // arguments
-        fake = opts.fake || false;
-
-        // execute
+    forward({fake=false} = {}) {
         this._animationStatus = AnimationStatus.RUNNING;
         const self = this;
 
@@ -162,11 +158,7 @@ class AnimaticNode {
         }
     }
 
-    backward(opts) {
-        // arguments
-        fake = opts.fake || false;
-
-        // execute
+    backward({fake=false} = {}) {
         this._animationStatus = AnimationStatus.RUNNING;
         const self = this;
 

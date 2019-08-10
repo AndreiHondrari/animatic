@@ -173,14 +173,24 @@ var Animatic = (function () {
         }
       }]);
 
-      function AnimaticNode(args) {
+      function AnimaticNode() {
+        var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref$handler = _ref.handler,
+            handler = _ref$handler === void 0 ? null : _ref$handler,
+            _ref$backward = _ref.backward,
+            backward = _ref$backward === void 0 ? null : _ref$backward,
+            _ref$pause = _ref.pause,
+            pause = _ref$pause === void 0 ? null : _ref$pause,
+            _ref$reset = _ref.reset,
+            reset = _ref$reset === void 0 ? null : _ref$reset;
+
         _classCallCheck(this, AnimaticNode);
 
-        this._handler = args.handler || null;
-        this._backwardFunction = args.backward || null;
-        this._pauseFunction = args.pause || null;
-        this._resetFunction = args.reset || null;
-        this._isFunctionHandler = args.handler instanceof Function;
+        this._handler = handler;
+        this._backwardFunction = backward;
+        this._pauseFunction = pause;
+        this._resetFunction = reset;
+        this._isFunctionHandler = handler instanceof Function;
         this._id = AnimaticNode._getNewId();
         this._orchestra = null;
         this._animationStatus = AnimationStatus.PAUSED;
@@ -241,9 +251,10 @@ var Animatic = (function () {
 
       }, {
         key: "forward",
-        value: function forward(opts) {
-          // arguments
-          fake = opts.fake || false; // execute
+        value: function forward() {
+          var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+              _ref2$fake = _ref2.fake,
+              fake = _ref2$fake === void 0 ? false : _ref2$fake;
 
           this._animationStatus = AnimationStatus.RUNNING;
           var self = this;
@@ -317,9 +328,10 @@ var Animatic = (function () {
         }
       }, {
         key: "backward",
-        value: function backward(opts) {
-          // arguments
-          fake = opts.fake || false; // execute
+        value: function backward() {
+          var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+              _ref3$fake = _ref3.fake,
+              fake = _ref3$fake === void 0 ? false : _ref3$fake;
 
           this._animationStatus = AnimationStatus.RUNNING;
           var self = this;
